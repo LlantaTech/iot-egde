@@ -1,0 +1,27 @@
+services:
+  mongo-egde:
+    image: mongo:6.0
+    container_name: mongo-egde
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - edge_net
+
+  edge-app:
+    build: .
+    container_name: edge-app
+    restart: unless-stopped
+    depends_on:
+      - mongo-egde
+    networks:
+      - edge_net
+    environment:
+      - PYTHONUNBUFFERED=1
+
+volumes:
+  mongo_data:
+
+networks:
+  edge_net:
+    driver: bridge
