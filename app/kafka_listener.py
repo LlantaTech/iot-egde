@@ -8,9 +8,9 @@ from kafka import KafkaConsumer
 from app.storage import get_mongo_connection
 from app.mqtt_handler import client as mqtt_client
 
-KAFKA_BROKER = "e884ckgwoc4wwokggccwk8go.coolify.ryzeon.me:9092"
+KAFKA_BROKER = "kafka.llantatech.org.pe:9093"
 KAFKA_TOPIC = "esp32-topic"
-KAFKA_GROUP_ID = "edge-device-group"
+KAFKA_GROUP_ID = "rutakids-group"
 
 # Lista de dispositivos conocidos
 KNOWN_DEVICES = ["esp32-01", "esp32-02", "esp32-03"]
@@ -38,9 +38,12 @@ def start_kafka_listener():
 
             print("[KAFKA] Escuchando comandos desde Kafka...")
             for message in consumer:
+                print(message)
                 try:
                     data = message.value
-                    children = data.get("children")
+                    jsonData = json.loads(data)
+                    children = jsonData["children"]
+                    print(children)
 
                     if not children:
                         print("[KAFKA] Mensaje sin 'children'. Ignorando.")
@@ -53,6 +56,8 @@ def start_kafka_listener():
 
                     guardar_lista_en_mongo(payload)
 
+                    print(payload)
+                    #
                     for device_id in KNOWN_DEVICES:
                         topic = f"passengers/list/{device_id}"
                         mqtt_client.publish(topic, json.dumps(payload), qos=1, retain=True)
